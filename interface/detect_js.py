@@ -21,12 +21,15 @@ def detect_js(opt, model, img_path, img_save_path):
     :param model: 模型
     :param img_path: 图片路径
     :param img_save_path: 图片存储路径
-    :return: 处理后的图片，返回的具体信息
+    :return: 处理后的图片，有缺陷（True），排灯位置（从左至右）
     """
     global im0
-    ball = []
-    chip = []
+    defect = False #缺陷标志
+     #排灯位置
+    l1, l2, l3 = 0, 0, 0
+    flag1, flag2, flag3 = True, True, True
     t_start = time.time()
+
     # opt = load_parameter(img_path)
     source = img_path
     # weights = opt.weights
@@ -62,7 +65,7 @@ def detect_js(opt, model, img_path, img_save_path):
 
         # 结果处理
         for i, det in enumerate(pred):  # 检测每一张图片
-            p,im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
+            p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # 测试集文件地址
             save_path = save_dir + "/" + p.name  # 文件保存地址
@@ -75,16 +78,31 @@ def detect_js(opt, model, img_path, img_save_path):
                 # Write results
                 file_name = get_file_name(path)     # [文件名+后缀]
                 for *xyxy, conf, cls in reversed(det):  # xyxy是坐标点，(x1, y1),(x2, y2)代表左上和右下两个点
-                    location = [(int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))]     # 左上和右下坐标点
+                    # location = [(int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))]     # 左上和右下坐标点
+                    if flag1:
+                        if int(xyxy[0]) <= int(im0.shape[1] / 3):
+                            # print(int(xyxy[1]), int(xyxy[3]), im0.shape)
+                            l1 = 1
+                            flag1 = False
+                    if flag2:
+                        if (int(im0.shape[1] / 3) <= int(xyxy[2]) or int(xyxy[0]) <= int(2 * im0.shape[1] / 3)) or (
+                                int(xyxy[0]) < int(im0.shape[1] / 3) and int(xyxy[2]) > int(2 * im0.shape[1] / 3)):
+                            # print(int(xyxy[0]), int(xyxy[2]), im0.shape)
+                            l2 = 1
+                            flag2 = False
+                    if flag3:
+                        if int(xyxy[2]) >= int(2 * im0.shape[1] / 3):
+                            # print(int(xyxy[0]), int(xyxy[2]), im0.shape)
+                            l3 = 1
+                            flag3 = False
                     if save_img or opt.save_crop or view_img:  # 加框
                         c = int(cls)  # integer class
                         label = None if opt.hide_labels else (names[c] if opt.hide_conf else f'{names[c]} {conf:.2f}')  # 标签 置信度
-                        if names[c] == "Ball":
-                            ball.append(location)
-                        elif names[c] == "Chip":
-                            chip.append(location)
+                        if names[c] == "burrs" or "swrinkles" or "hole" or "shadow" or "fold" or "reticulated" or "spot" or "oily":
+                            defect = True
+                        else:
+                            defect = False
                         plot_one_box(xyxy, im0, label=label, color=colors(c, True), line_thickness=opt.line_thickness)  # 画框和文字
-
                         if opt.save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
 
@@ -97,5 +115,8 @@ def detect_js(opt, model, img_path, img_save_path):
     #     "Chip": str_joint(chip, "chip")
     # }
         print(f'目标检测花费时间：{time.time() - t_start:.3f}s')
-    dict_info = str_joint(ball, "ball") + str_joint(chip, "chip")
+    #dict_info = str_joint(ball, "ball") + str_joint(chip, "chip")
+    light_id = [l1, l2, l3]
+    dict_info = [defect, light_id]
+
     return im0, dict_info

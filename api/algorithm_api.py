@@ -37,13 +37,16 @@ def jinsi():
     # 2、图像识别
     time_start = time.time()
     img_res, info_res = detect_js(opt_fabric, js_model, file_path, save_path)
-    os.remove(ori_file_path + file_name)
+    # os.remove(ori_file_path + file_name)
     # 3、图像保存
     cv2.imwrite(os.path.join(save_path, save_name), img_res)
     # 4、返回json
+    # info = {
+    #     "resname": save_name,
+    #     "info": info_res
+    # }
     info = {
         "resname": save_name,
-        "info": info_res
     }
     print(info)
     print(f'检测计算花费时间：{time.time() - time_start:.3f}s')

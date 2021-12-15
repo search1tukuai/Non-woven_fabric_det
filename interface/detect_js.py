@@ -115,7 +115,7 @@ def detect_js(opt, model, img_path, img_save_path):
     #     "Chip": str_joint(chip, "chip")
     # }
         print(f'目标检测花费时间：{time.time() - t_start:.3f}s')
-    #dict_info = str_joint(ball, "ball") + str_joint(chip, "chip")
+    # dict_info = str_joint(Ball, "ball") + str_joint(Chip, "chip")
     light_id = [l1, l2, l3]
     dict_info = [defect, light_id]
 

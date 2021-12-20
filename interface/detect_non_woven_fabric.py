@@ -14,7 +14,7 @@ from algorithm.region.utils.torch_utils import select_device, load_classifier, t
 from utils.util import str_joint
 
 
-def detect_js(opt, model, img_path, img_save_path):
+def detect_non_woven_fabric(opt, model, img_path, img_save_path):
     """
 
     :param opt: 参数
@@ -116,7 +116,9 @@ def detect_js(opt, model, img_path, img_save_path):
     # }
         print(f'目标检测花费时间：{time.time() - t_start:.3f}s')
     # dict_info = str_joint(Ball, "ball") + str_joint(Chip, "chip")
-    light_id = [l1, l2, l3]
-    dict_info = [defect, light_id]
+    # light_id = [l1, l2, l3]
+    # dict_info = [defect, light_id]
+    defect = str(defect)
+    light_id = str(l1)+str(l2)+str(l3)
 
-    return im0, dict_info
+    return im0, defect, light_id
